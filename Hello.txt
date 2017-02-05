@@ -1,0 +1,101 @@
+grammar Hello;
+
+program: CLASS 'Program' '{' (declaration)* '}';
+
+
+
+declaration:  			structDeclaration
+						| varDeclaration
+						| methodDeclaration ;
+varDeclaration: 		varType (ID|CHAR) ';'| varType (ID|CHAR) '[' NUM ']' ';'  ;
+structDeclaration: 		STRUCT (ID|CHAR) '{' (varDeclaration)* '}' ;
+varType:				INT
+						| CHARACTER
+						| BOOLEAN
+						| STRUCT (ID|CHAR)
+						| structDeclaration
+						| VOID;
+methodDeclaration:		methodType (ID|CHAR) '(' (((parameter ',')*parameter) | parameter)* ')' block;
+methodType:				INT
+						| CHARACTER
+						| BOOLEAN
+						| VOID;
+parameter:				parameterType (ID|CHAR)
+						| parameterType (ID|CHAR) '[' ']' ;
+parameterType:    		INT
+						| CHARACTER
+						| BOOLEAN;
+block:					'{' (varDeclaration)* (statement)* '}';
+statement:              IF '(' (expression|operacion) ')' block 
+						| IF '(' (expression|operacion) ')' block ELSE block 
+						|WHILE '(' (expression|operacion) ')' block
+						|RETURN (expression|operacion)? ';'
+						|methodCall ';'
+						|block
+						|location '=' (expression|operacion) ';'
+						|(expression|operacion)? ';';
+location:				((ID|CHAR) | (ID|CHAR) '[' (expression|operacion)']' ) ('.' location)?;
+expression:				location
+						| methodCall
+						| literal
+						| '-' (expression|operacion)
+						| '!' (expression|operacion)
+						| '(' (expression|operacion) ')';
+						
+						
+operacion
+   : term (arith_opa term)*
+   ;
+
+term
+   : rel (arith_opb rel)* ;		
+
+   
+rel: 
+	eq (rel_op eq)? ;	
+	
+eq: 
+	cond (eq_op cond)? ;	
+
+cond: 	
+	expression (cond_op expression)* ;		
+
+	
+methodCall:				(ID|CHAR) '(' ((( arg ',')* arg ) | arg)* ')' ;
+arg: 					(expression|operacion) ;
+op:						arith_opa | arith_opb | rel_op | eq_op | cond_op ;
+arith_opa:				'+' | '-'  ;
+arith_opb:				 '*' | '/' | '%' ;
+rel_op:					'<' | '>' | '<=' |'>=';
+eq_op:					'==' | '!=' ;
+cond_op:				'&&' | '||' ;
+literal:				int_literal | char_literal | bool_literal ;
+int_literal:			NUM;
+char_literal:			APOS  CHAR APOS ;
+bool_literal:			'true' | 'false' ;
+
+
+
+
+
+COMMENT:  '\\' ~( '\r' | '\n' )*;
+WS: [ \t\r\n]+ -> skip;
+
+CLASS:'class';
+STRUCT: 'struct';
+TRUE: 'true';
+FALSE:'false';
+VOID:'void';
+IF:'if';
+ELSE:'else';
+WHILE:'while';
+RETURN:'return';
+INT: 'int';
+CHARACTER:'char';
+BOOLEAN:'boolean';
+
+
+NUM: [0-9][0-9]* ;
+APOS:'\'';
+CHAR: [a-zA-Z];
+ID: ([a-zA-Z])([a-zA-Z0-9])*;
